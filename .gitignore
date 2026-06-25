@@ -1,0 +1,28 @@
+# ---- Large input data (provided by organizers, not version-controlled) ----
+candidates.jsonl
+*.db
+*.db-wal
+*.db-shm
+
+# ---- Virtual environments ----
+venv/
+.venv/
+
+# ---- Python caches ----
+__pycache__/
+*.pyc
+*.pyo
+
+# ---- Derived / regenerable artifacts ----
+coherence_scores.csv
+coherence_ceiling.json
+feature_matrix.csv
+
+# ---- Scratch / temp ----
+_stage3_*.txt
+_spec_*
+*.tmp
+
+# ---- OS cruft ----
+.DS_Store
+Thumbs.db
