@@ -1,0 +1,50 @@
+{"candidate_id": "CAND_0055905", "relevance": 5, "reasoning": "8.1y, semantic search + LoRA candidate-JD matching at Flipkart/Uber; available"}
+{"candidate_id": "CAND_0002025", "relevance": 5, "reasoning": "5.9y rec-sys + candidate-JD matching at Apple/Aganitha; available"}
+{"candidate_id": "CAND_0086022", "relevance": 4, "reasoning": "5.3y recruiter-search ranking at Sarvam/Uber; slightly junior, moderate availability"}
+{"candidate_id": "CAND_0060072", "relevance": 3, "reasoning": "Strong rec-sys but unavailable: 0.10 response, not open, inactive 5mo"}
+{"candidate_id": "CAND_0018499", "relevance": 5, "reasoning": "7.2y RAG ranking + candidate-JD matching at Zomato/Google/Flipkart; available"}
+{"candidate_id": "CAND_0099806", "relevance": 4, "reasoning": "Ranking models + offline-online eval but only 4.6y (junior for senior role)"}
+{"candidate_id": "CAND_0046525", "relevance": 5, "reasoning": "6.1y embedding-search + RAG ranking at LinkedIn; excellent availability"}
+{"candidate_id": "CAND_0037000", "relevance": 2, "reasoning": "On-domain search/ranking but only 2.7y and not open to work"}
+{"candidate_id": "CAND_0041611", "relevance": 2, "reasoning": "6.4y perfect domain but classic unavailable: 0.07 response, not open, inactive 6mo"}
+{"candidate_id": "CAND_0070485", "relevance": 4, "reasoning": "6.4y semantic search + LTR at Saarthi/Dream11; moderate availability"}
+{"candidate_id": "CAND_0064904", "relevance": 4, "reasoning": "4.9y recommendation + MLOps at LinkedIn/Freshworks; slightly junior, available"}
+{"candidate_id": "CAND_0076251", "relevance": 4, "reasoning": "7.6y semantic search core + some adjacent churn-ML; moderate availability"}
+{"candidate_id": "CAND_0042506", "relevance": 3, "reasoning": "RAG + recommendation but 4.2y junior; moderate availability"}
+{"candidate_id": "CAND_0077337", "relevance": 5, "reasoning": "7.0y rec-sys + semantic-search migration at Paytm/Razorpay; 0.95 response, available"}
+{"candidate_id": "CAND_0081846", "relevance": 5, "reasoning": "6.7y RAG ranking + semantic search at Razorpay/Paytm; available"}
+{"candidate_id": "CAND_0092278", "relevance": 2, "reasoning": "6.8y perfect domain but unavailable: 0.07 response, not open, inactive 7mo"}
+{"candidate_id": "CAND_0062247", "relevance": 5, "reasoning": "7.3y semantic search + LTR at Google/Dream11; available"}
+{"candidate_id": "CAND_0071974", "relevance": 5, "reasoning": "7.8y end-to-end ranking pipeline + candidate-JD matching at Netflix/Meta; ideal"}
+{"candidate_id": "CAND_0041568", "relevance": 4, "reasoning": "5.2y LTR ranking + recommendation at Haptik/Flipkart; moderate availability"}
+{"candidate_id": "CAND_0084819", "relevance": 4, "reasoning": "LTR ranking core but 4.5y junior; good availability"}
+{"candidate_id": "CAND_0051152", "relevance": 0, "reasoning": "Mechanical Engineer; career is accounting/support; off-domain; consulting; unavailable"}
+{"candidate_id": "CAND_0077902", "relevance": 0, "reasoning": "Marketing Manager; consulting business-analyst/graphic-design career; off-domain"}
+{"candidate_id": "CAND_0012753", "relevance": 0, "reasoning": "Content Writer; sales/support/BA career; off-domain"}
+{"candidate_id": "CAND_0044143", "relevance": 0, "reasoning": "Accountant; brand design/support/BA; off-domain"}
+{"candidate_id": "CAND_0009003", "relevance": 0, "reasoning": "Content Writer; support + mechanical; off-domain"}
+{"candidate_id": "CAND_0060677", "relevance": 0, "reasoning": "Project Manager; operations/support/mechanical/accounting; off-domain; consulting"}
+{"candidate_id": "CAND_0055494", "relevance": 0, "reasoning": "Sales Executive; pure enterprise sales; off-domain"}
+{"candidate_id": "CAND_0056812", "relevance": 0, "reasoning": "Operations Manager; content/marketing/accounting/sales; off-domain"}
+{"candidate_id": "CAND_0008439", "relevance": 0, "reasoning": "Sales Executive; consulting BA; off-domain; 2.2y"}
+{"candidate_id": "CAND_0006341", "relevance": 0, "reasoning": "Mechanical Engineer; mechanical design/sales/HR; off-domain; consulting"}
+{"candidate_id": "CAND_0076335", "relevance": 0, "reasoning": "Content Writer; sales; off-domain; consulting"}
+{"candidate_id": "CAND_0027646", "relevance": 0, "reasoning": "Graphic Designer; content/SEO; off-domain"}
+{"candidate_id": "CAND_0047040", "relevance": 0, "reasoning": "Operations Manager; sales/support; off-domain"}
+{"candidate_id": "CAND_0017495", "relevance": 0, "reasoning": "Operations Manager; mechanical/marketing career with AI skills as bait — classic trap"}
+{"candidate_id": "CAND_0043880", "relevance": 0, "reasoning": "Mechanical Engineer; marketing; off-domain; 1.2y"}
+{"candidate_id": "CAND_0062843", "relevance": 0, "reasoning": "Civil Engineer; support/sales/ops/HR; off-domain"}
+{"candidate_id": "CAND_0004087", "relevance": 2, "reasoning": "7.8y data warehouse/dbt/Airflow; adjacent data-eng not retrieval/ML; services-heavy; not open"}
+{"candidate_id": "CAND_0015688", "relevance": 1, "reasoning": "2.5y data warehouse; junior, off-core; not open"}
+{"candidate_id": "CAND_0094472", "relevance": 1, "reasoning": "2.4y backend/analytics at Cognizant; junior, services, adjacent"}
+{"candidate_id": "CAND_0059856", "relevance": 1, "reasoning": "2.4y backend analytics; junior, adjacent"}
+{"candidate_id": "CAND_0016900", "relevance": 2, "reasoning": "5.6y data pipelines; adjacent data-eng, some product (Meesho); open"}
+{"candidate_id": "CAND_0004852", "relevance": 2, "reasoning": "7.0y data warehouse/pipelines at product cos; adjacent not core ML"}
+{"candidate_id": "CAND_0032741", "relevance": 2, "reasoning": "5.5y data pipelines; half at Accenture; adjacent data-eng"}
+{"candidate_id": "CAND_0022496", "relevance": 1, "reasoning": "2.1y backend/analytics; junior despite title; adjacent"}
+{"candidate_id": "CAND_0005483", "relevance": 1, "reasoning": "2.4y data warehouse at Cognizant; junior, services"}
+{"candidate_id": "CAND_0009471", "relevance": 2, "reasoning": "5.4y data pipelines/backend at Flipkart/Zomato; adjacent; open"}
+{"candidate_id": "CAND_0089917", "relevance": 2, "reasoning": "5.3y data pipelines/backend at product cos; adjacent not retrieval"}
+{"candidate_id": "CAND_0014601", "relevance": 2, "reasoning": "7.0y analytics pipelines; adjacent data-eng not ML/retrieval"}
+{"candidate_id": "CAND_0016964", "relevance": 2, "reasoning": "7.5y data warehouse/pipelines; adjacent; LTR skill but data-eng career"}
+{"candidate_id": "CAND_0022936", "relevance": 2, "reasoning": "7.9y data warehouse/backend at product cos; adjacent not core ML"}

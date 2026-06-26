@@ -44,20 +44,23 @@ def load_labels(path="labels.jsonl"):
 
 def run(input_path="candidates.jsonl", labels_path="labels.jsonl",
         coherence_path="coherence_scores.csv", ceiling_path="coherence_ceiling.json",
-        artifacts=ARTIFACTS, add_honeypots=True, val_frac=0.2, seed=42):
+        artifacts=ARTIFACTS, add_honeypots=True, honeypot_cap=30, val_frac=0.2, seed=42):
     jd = load_and_parse("jd.txt")
     labels = load_labels(labels_path)
     print(f"Loaded {len(labels)} LLM labels.")
 
-    # add Stage-2 honeypots as gold relevance 0 (model learns the floor)
+    # Add a CAPPED sample of Stage-2 honeypots as gold relevance-0 so the model
+    # also learns to push impossibles down — but only a small number, since the
+    # inference rank-ceiling already removes them and a flood of 0s would drown
+    # the real ranking signal (domain/seniority/availability).
     if add_honeypots and os.path.exists(ceiling_path):
-        hp = json.load(open(ceiling_path))
-        n_added = 0
+        hp = [c for c in json.load(open(ceiling_path)) if c not in labels]
+        rng0 = np.random.default_rng(seed)
+        if len(hp) > honeypot_cap:
+            hp = rng0.choice(hp, size=honeypot_cap, replace=False).tolist()
         for cid in hp:
-            if cid not in labels:
-                labels[cid] = 0
-                n_added += 1
-        print(f"Added {n_added} Stage-2 honeypots as gold relevance-0.")
+            labels[cid] = 0
+        print(f"Added {len(hp)} Stage-2 honeypots as gold relevance-0 (capped).")
 
     coherence = _load_coherence(coherence_path)
     wanted = set(labels)
@@ -96,25 +99,29 @@ def run(input_path="candidates.jsonl", labels_path="labels.jsonl",
     dtrain = lgb.Dataset(X[tr_idx], label=y[tr_idx], group=[len(tr_idx)])
     dval = lgb.Dataset(X[val_idx], label=y[val_idx], group=[len(val_idx)], reference=dtrain)
 
+    # Leaf/bin constraints scale with dataset size so small label sets can still
+    # split (raise these as the label count grows).
+    n_train = len(tr_idx)
+    min_leaf = 5 if n_train < 200 else (10 if n_train < 1000 else 20)
     params = {
         "objective": "lambdarank",
         "metric": "ndcg",
         "ndcg_eval_at": [10, 50],
         "boosting_type": "gbdt",
-        "num_leaves": 31,
+        "num_leaves": 15 if n_train < 300 else 31,
         "learning_rate": 0.05,
-        "min_data_in_leaf": 20,
+        "min_data_in_leaf": min_leaf,
+        "min_data_in_bin": 1,
         "feature_fraction": 0.9,
-        "bagging_fraction": 0.9,
-        "bagging_freq": 1,
+        "bagging_fraction": 1.0,
         "label_gain": [0, 1, 3, 7, 15, 31],   # gains for relevance 0..5
         "verbose": -1,
     }
-    print("\nTraining LightGBM (lambdarank)...")
+    print(f"\nTraining LightGBM (lambdarank), min_data_in_leaf={min_leaf}...")
     model = lgb.train(
-        params, dtrain, num_boost_round=400,
+        params, dtrain, num_boost_round=300,
         valid_sets=[dtrain, dval], valid_names=["train", "val"],
-        callbacks=[lgb.early_stopping(40), lgb.log_evaluation(25)],
+        callbacks=[lgb.early_stopping(50), lgb.log_evaluation(50)],
     )
 
     os.makedirs(artifacts, exist_ok=True)
