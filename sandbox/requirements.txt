@@ -1,0 +1,7 @@
+# Sandbox deps — intentionally LEAN. The demo ranks a <=100 candidate sample
+# directly, so it needs NO embeddings/FAISS/torch/sklearn — just the LightGBM
+# model + the feature/coherence/reasoning code.
+streamlit==1.58.0
+lightgbm==4.6.0
+pandas==3.0.3
+numpy==2.4.6

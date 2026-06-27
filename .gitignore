@@ -17,13 +17,17 @@ __pycache__/
 coherence_scores.csv
 coherence_ceiling.json
 feature_matrix.csv
-artifacts/
+artifacts/*
+# keep the small trained model + feature order (needed by the sandbox app); big
+# index/embeddings/model-weights stay ignored. (gitignore has no inline comments!)
+!artifacts/ranker.lgb
+!artifacts/feature_cols.json
 label_queue.jsonl
 _batch_labels.json
 _precompute_*.log
 
 # ---- Large precompute artifacts (regenerate via precompute.py) ----
-artifacts/
+# (artifacts/ contents handled above: only ranker.lgb + feature_cols.json kept)
 artifacts_test/
 *.npy
 *.index
@@ -36,6 +40,7 @@ artifacts_test/
 # ---- Scratch / temp ----
 _stage3_*.txt
 _broadnet*.log
+_streamlit.log
 _spec_*
 *.tmp
 

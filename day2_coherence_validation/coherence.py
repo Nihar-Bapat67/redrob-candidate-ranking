@@ -33,7 +33,9 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import IsolationForest
+# NOTE: scikit-learn is imported lazily inside add_anomaly_score() so that the
+# deterministic validator (validate_coherence) can be imported WITHOUT sklearn —
+# e.g. by the lightweight sandbox app, which doesn't need the anomaly signal.
 
 # --------------------------------------------------------------------------- #
 # Constants / tunable thresholds (calibrate against the score distribution)
@@ -302,6 +304,7 @@ def add_anomaly_score(df):
     ensemble of IsolationForests for stability. This is a SOFT feature for Stage 4,
     not a filter.
     """
+    from sklearn.ensemble import IsolationForest  # lazy: keeps validate_coherence sklearn-free
     X = df[META_FEATURES].to_numpy(dtype=float)
     seeds = [42, 51, 88, 101, 212]
     scores = np.zeros(len(df), dtype=float)

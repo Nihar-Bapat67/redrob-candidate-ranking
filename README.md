@@ -75,6 +75,16 @@ labels are committed so training is reproducible.
 - **CPU only / no GPU:** `faiss-cpu`, CPU torch, LightGBM.
 - **No network at ranking:** model + index loaded from disk; LLMs used *only* offline.
 
+## Sandbox / demo (spec §10.5)
+A lightweight **Streamlit** app ranks a ≤100-candidate sample end-to-end (LightGBM
++ coherence + reasoning; no FAISS/embeddings needed at this scale). Run it locally:
+```bash
+pip install -r sandbox/requirements.txt
+streamlit run sandbox/app.py
+```
+See [`sandbox/README.md`](sandbox/README.md) for one-click deploy to Hugging Face
+Spaces / Streamlit Cloud / Docker.
+
 ## Repo map (organised day-wise; shared library + entry point kept at root)
 ```
 # --- common (root): the entry point + shared library imported across stages ---
