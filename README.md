@@ -1,7 +1,7 @@
 # Redrob AI — Intelligent Candidate Ranking
 
 Ranks the top 100 candidates from `candidates.jsonl` for the released Senior AI
-Engineer JD. The ranking step is **offline, CPU-only, no network, < 40 s**.
+Engineer JD. The ranking step is **offline, CPU-only, no network.
 
 ## TL;DR — reproduce the submission
 
@@ -98,7 +98,7 @@ streamlit run sandbox/app.py
 See [`sandbox/README.md`](sandbox/README.md) for one-click deploy to Hugging Face
 Spaces / Streamlit Cloud / Docker.
 
-## Repo map (production-oriented; shared pipeline package + root entry points)
+## Repo map (shared pipeline package + root entry points)
 ```
 # --- common (root): the entry point + shared runtime files ---
 rank.py                 inference entry point (judges run this)
