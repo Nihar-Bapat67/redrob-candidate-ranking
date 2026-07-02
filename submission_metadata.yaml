@@ -4,18 +4,18 @@
 # ============================================================================
 # Team identity
 # ============================================================================
-team_name: "TODO-your-team-name"            # TODO
+team_name: "Builders1o1"            # TODO
 
 primary_contact:
   name: "Nihar Bapat"                        # TODO confirm
-  email: "terraforge84@gmail.com"            # TODO confirm
-  phone: "+91-XXXXXXXXXX"                    # TODO
+  email: "niharbapat15@gmail.com"            # TODO confirm
+  phone: "+91-7414969824"                    # TODO
 
 team_members:
   - name: "Nihar Bapat"                      # TODO confirm / add members
-    email: "terraforge84@gmail.com"
+    email: "niharbapat15@gmail.com"
     role: "ML Engineer"
-
+                                    
 # ============================================================================
 # Code and reproducibility
 # ============================================================================
@@ -41,11 +41,11 @@ compute:
 # AI tools declaration (honest)
 # ============================================================================
 ai_tools_used:
-  - "Claude"        # architecture, code, and as the offline relevance-labeling oracle (pre-compute only)
+  - "Claude"        # code, and as the offline relevance-labeling oracle (pre-compute only)
   - "Groq (Llama 3.3 70B)"   # offline bulk relevance labeling (pre-compute only)
 
 ai_usage_summary: |
-  AI was used (a) as a development assistant for code and architecture, and
+  AI was used (a) as a development assistant for code  and
   (b) as an OFFLINE labeling oracle during pre-computation: Claude and Groq's
   Llama-3.3-70B rated candidate-JD relevance (0-5) to train the LightGBM ranker.
   No LLM/API is called during the ranking step (rank.py) — it is fully offline,

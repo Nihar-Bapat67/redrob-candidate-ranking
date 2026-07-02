@@ -21,6 +21,19 @@ calls**. If `artifacts/` is not present, build it once (see *Pre-computation*).
 This is a **knowledge-distillation** design: expensive LLM judgment is used
 *offline* to teach a small, fast, local model that runs at inference.
 
+### Repository structure
+
+- Core runtime entry points stay at the repository root: [rank.py](rank.py), [submission.csv](submission.csv), [submission_metadata.yaml](submission_metadata.yaml)
+- Shared pipeline modules now live under [src/pipeline](src/pipeline)
+- Documentation and architecture notes live under [docs/architecture](docs/architecture)
+- The sandbox demo remains in [sandbox/app.py](sandbox/app.py)
+
+### Daily workflow
+
+1. Run ingestion/coherence/feature steps from the pipeline package.
+2. Build offline artifacts with the precompute and training scripts.
+3. Generate the final submission with [rank.py](rank.py).
+
 **Offline pre-computation** (no time limit, network allowed):
 1. **Embeddings → FAISS** (`precompute.py`): embed all 100k profiles with
    `all-MiniLM-L6-v2` into a FAISS `IndexFlatIP` (the *recall* layer).
@@ -43,7 +56,7 @@ list — an HR Manager scores ≈ 0.09 while an ML Engineer scores ≈ 0.90.
 ### The 5 stages
 | Stage | File(s) | Role |
 |------|---------|------|
-| 1 Ingestion | `db_setup.py` | stream/parse/normalise 100k JSONL records |
+| 1 Ingestion | `ingestion.py` | stream/parse/normalise 100k JSONL records |
 | 2 Coherence | `coherence.py` | deterministic impossibility checks → honeypot `rank_ceiling` + soft anomaly signal |
 | 3 Features | `canonicaliser.py`, `jd_parser.py`, `features.py` | 14 JD-grounded features (per-candidate) |
 | 4 Ranking | `precompute.py`, `train_ranker.py`, `rank.py` | FAISS recall + LightGBM precision |
@@ -57,11 +70,11 @@ import the shared modules at root):
 ```bash
 pip install -r requirements-precompute.txt
 
-python day2_coherence_validation/coherence.py        # -> coherence_scores.csv, coherence_ceiling.json
-python day3_index_and_labels/precompute.py           # -> artifacts/faiss.index, candidate_ids.pkl, embedder/  (~45 min CPU)
-python day3_index_and_labels/make_label_queue.py     # -> label_queue.jsonl (FAISS contenders + stratified)
-GROQ_API_KEY=... python day4_labeling_and_training/label_llm.py --provider groq   # broad-net labels -> labels.jsonl (resumable)
-python day4_labeling_and_training/train_ranker.py --honeypot-cap 70   # -> artifacts/ranker.lgb
+python src/pipeline/coherence.py        # -> coherence_scores.csv, coherence_ceiling.json
+python src/pipeline/precompute.py           # -> artifacts/faiss.index, candidate_ids.pkl, embedder/  (~45 min CPU)
+python src/pipeline/make_label_queue.py     # -> label_queue.jsonl (FAISS contenders + stratified)
+GROQ_API_KEY=... python src/pipeline/label_llm.py --provider groq   # broad-net labels -> labels.jsonl (resumable)
+python src/pipeline/train_ranker.py --honeypot-cap 70   # -> artifacts/ranker.lgb
 ```
 
 Large artifacts (`faiss.index`, `embeddings.npy`, `embedder/`) are git-ignored
@@ -85,29 +98,27 @@ streamlit run sandbox/app.py
 See [`sandbox/README.md`](sandbox/README.md) for one-click deploy to Hugging Face
 Spaces / Streamlit Cloud / Docker.
 
-## Repo map (organised day-wise; shared library + entry point kept at root)
+## Repo map (production-oriented; shared pipeline package + root entry points)
 ```
-# --- common (root): the entry point + shared library imported across stages ---
+# --- common (root): the entry point + shared runtime files ---
 rank.py                 inference entry point (judges run this)
-canonicaliser.py        skill alias + domain lexicons
-jd_parser.py            JD -> structured spec (+ build_jd_query)
-features.py             14-feature builder (per candidate)
-reasoning.py            Stage 5 rank-aware reasoning
-labels.jsonl            LLM relevance labels (training data)
-jd.txt, requirements*.txt, submission.csv, submission_metadata.yaml
+submission.csv          ranked submission output
+submission_metadata.yaml submission metadata
+jd.txt, requirements*.txt, labels.jsonl
 
-# --- day-wise development work ---
-day1_data_ingestion/
-    db_setup.py             streaming JSONL ingestion
-day2_coherence_validation/
-    coherence.py            honeypot/coherence validator (deterministic + soft anomaly)
-day3_index_and_labels/
-    precompute.py           offline FAISS build (MiniLM embeddings over 100k)
-    make_label_queue.py     pick candidates to label (FAISS contenders + stratified)
-day4_labeling_and_training/
-    label_llm.py            offline LLM labeler (Groq/Gemini), resumable
-    add_labels.py           merge label batches into labels.jsonl
-    train_ranker.py         LightGBM lambdarank trainer
+# --- pipeline package ---
+src/pipeline/
+    coherence.py         honeypot/coherence validator (deterministic + soft anomaly)
+    precompute.py        offline FAISS build (MiniLM embeddings over 100k)
+    make_label_queue.py  pick candidates to label (FAISS contenders + stratified)
+    label_llm.py         offline LLM labeler (Groq/Gemini), resumable
+    add_labels.py        merge label batches into labels.jsonl
+    train_ranker.py      LightGBM trainer
+    canonicaliser.py     skill alias + domain lexicons
+    jd_parser.py         JD -> structured spec (+ build_jd_query)
+    features.py          14-feature builder (per candidate)
+    reasoning.py         Stage 5 rank-aware reasoning
+    ingestion.py         streaming JSONL ingestion helper
 ```
-The day-folder scripts add the project root to `sys.path` so the shared modules
-import cleanly when run from root.
+The pipeline scripts are now called from the package path directly, keeping the
+repository structure easy to navigate and consistent with a product team workflow.

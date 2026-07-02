@@ -27,9 +27,12 @@ import lightgbm as lgb
 
 # allow importing the shared library modules kept at the project root
 import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from jd_parser import load_and_parse
-from features import build_feature_row, FEATURE_COLUMNS, _load_coherence
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+SRC = os.path.join(ROOT, "src")
+if SRC not in sys.path:
+    sys.path.insert(0, SRC)
+from pipeline.jd_parser import load_and_parse
+from pipeline.features import build_feature_row, FEATURE_COLUMNS, _load_coherence
 
 ARTIFACTS = "artifacts"
 

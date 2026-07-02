@@ -27,9 +27,17 @@ import argparse
 
 import numpy as np
 
-from jd_parser import load_and_parse, build_jd_query
-from features import build_feature_row, FEATURE_COLUMNS, _load_coherence
-from reasoning import generate_reasoning
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
+
+from pipeline.jd_parser import load_and_parse, build_jd_query
+from pipeline.features import build_feature_row, FEATURE_COLUMNS, _load_coherence
+from pipeline.reasoning import generate_reasoning
 
 ARTIFACTS = "artifacts"
 TOP_K_FAISS = 500
