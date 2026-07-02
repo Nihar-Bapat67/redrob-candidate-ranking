@@ -25,12 +25,12 @@ import lightgbm as lgb
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, "day2_coherence_validation"))
+sys.path.insert(0, os.path.join(ROOT, "src"))
 
-from jd_parser import load_and_parse           # noqa: E402
-from features import build_feature_row, FEATURE_COLUMNS  # noqa: E402
-from reasoning import generate_reasoning        # noqa: E402
-from coherence import validate_coherence        # noqa: E402  (sklearn-free path)
+from pipeline.jd_parser import load_and_parse           # noqa: E402
+from pipeline.features import build_feature_row, FEATURE_COLUMNS  # noqa: E402
+from pipeline.reasoning import generate_reasoning        # noqa: E402
+from pipeline.coherence import validate_coherence        # noqa: E402  (sklearn-free path)
 
 ARTIFACTS = os.path.join(ROOT, "artifacts")
 

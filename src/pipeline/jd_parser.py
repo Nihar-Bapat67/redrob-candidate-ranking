@@ -15,12 +15,25 @@ field is defensible at the Stage-5 interview.
 """
 
 import re
+import sys
+from pathlib import Path
 
-from canonicaliser import (
-    canonicalise, SKILL_ALIASES,
-    RETRIEVAL_RANKING_SKILLS, NLP_LLM_SKILLS, CORE_ML_SKILLS,
-    CV_SPEECH_SKILLS, JD_REQUIRED_SKILLS, JD_NICE_TO_HAVE_SKILLS,
-)
+SRC_ROOT = Path(__file__).resolve().parent.parent
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+try:
+    from .canonicaliser import (
+        canonicalise, SKILL_ALIASES,
+        RETRIEVAL_RANKING_SKILLS, NLP_LLM_SKILLS, CORE_ML_SKILLS,
+        CV_SPEECH_SKILLS, JD_REQUIRED_SKILLS, JD_NICE_TO_HAVE_SKILLS,
+    )
+except ImportError:  # pragma: no cover - direct script execution fallback
+    from canonicaliser import (
+        canonicalise, SKILL_ALIASES,
+        RETRIEVAL_RANKING_SKILLS, NLP_LLM_SKILLS, CORE_ML_SKILLS,
+        CV_SPEECH_SKILLS, JD_REQUIRED_SKILLS, JD_NICE_TO_HAVE_SKILLS,
+    )
 
 # Locations the JD names. Score tiers reflect "Pune/Noida-preferred", then the
 # explicitly welcomed cities, then "outside India: case-by-case, no visa".

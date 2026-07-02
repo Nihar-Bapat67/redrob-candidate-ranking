@@ -206,6 +206,8 @@ function doneStage(i, sub){ steps[i].classList.add("done"); steps[i].classList.r
   $("#sd"+i).innerHTML = '<span class="check">✓</span> '+sub; }
 
 // ---- rank ----
+const API_BASE = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost')
+  ? 'http://127.0.0.1:8899' : '';
 $("#rankBtn").addEventListener("click", run);
 async function run(){
   $("#err").textContent=""; $("#results").style.display="none";
@@ -214,7 +216,7 @@ async function run(){
   const t0=performance.now();
 
   // fire the backend request immediately
-  const req = fetch("/api/rank",{method:"POST",headers:{"content-type":"application/json"},
+  const req = fetch(`${API_BASE}/api/rank`,{method:"POST",headers:{"content-type":"application/json"},
     body:JSON.stringify({jd_text:jdText, candidates})}).then(r=>r.json());
 
   // play the 4-stage animation

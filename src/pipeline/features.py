@@ -31,15 +31,27 @@ Each feature maps to a literal JD statement (defensible at the Stage-5 interview
 
 import json
 import argparse
+import sys
 from datetime import datetime
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from canonicaliser import (
-    canonicalise_set, RETRIEVAL_RANKING_SKILLS, NLP_LLM_SKILLS, CORE_ML_SKILLS,
-)
-from jd_parser import load_and_parse, CONSULTING_FIRMS
+SRC_ROOT = Path(__file__).resolve().parent.parent
+if str(SRC_ROOT) not in sys.path:
+    sys.path.insert(0, str(SRC_ROOT))
+
+try:
+    from .canonicaliser import (
+        canonicalise_set, RETRIEVAL_RANKING_SKILLS, NLP_LLM_SKILLS, CORE_ML_SKILLS,
+    )
+    from .jd_parser import load_and_parse, CONSULTING_FIRMS
+except ImportError:  # pragma: no cover - direct script execution fallback
+    from canonicaliser import (
+        canonicalise_set, RETRIEVAL_RANKING_SKILLS, NLP_LLM_SKILLS, CORE_ML_SKILLS,
+    )
+    from jd_parser import load_and_parse, CONSULTING_FIRMS
 
 CURRENT_DATE = datetime(2026, 6, 1)
 

@@ -24,9 +24,12 @@ import numpy as np
 
 # allow importing the shared library modules kept at the project root
 import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from jd_parser import load_and_parse, build_jd_query
-from features import domain_fit
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+SRC = os.path.join(ROOT, "src")
+if SRC not in sys.path:
+    sys.path.insert(0, SRC)
+from pipeline.jd_parser import load_and_parse, build_jd_query
+from pipeline.features import domain_fit
 
 ARTIFACTS = "artifacts"
 DESC_CHARS = 280

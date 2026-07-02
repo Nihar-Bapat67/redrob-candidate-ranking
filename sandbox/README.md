@@ -63,4 +63,4 @@ docker build -t redrob-sandbox . && docker run -p 8501:8501 redrob-sandbox
 
 ## Files the sandbox depends on (already in the repo)
 `artifacts/ranker.lgb`, `artifacts/feature_cols.json`, `jd.txt`,
-`sample_candidates.json`, and the shared modules at root + `day2_coherence_validation/coherence.py`.
+`sample_candidates.json`, and the shared modules in `src/pipeline`.
