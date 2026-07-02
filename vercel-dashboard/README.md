@@ -8,7 +8,7 @@ vercel-dashboard/            <-- set this as the Vercel "Root Directory"
   public/
     index.html               frontend: PDF JD upload, candidates upload, animated
                              4-stage pipeline, results table + CSV download
-    sample_candidates.json   50-candidate demo set ("Use sample data")
+    sample_candidates.json   120-candidate demo set ("Use sample data") -> ranked top-100
   api/
     rank.py                  serverless function  ->  POST /api/rank
     requirements.txt         lightgbm, numpy, pandas

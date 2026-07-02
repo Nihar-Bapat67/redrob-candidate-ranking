@@ -33,6 +33,7 @@ from pipeline.reasoning import generate_reasoning        # noqa: E402
 from pipeline.coherence import validate_coherence        # noqa: E402  (sklearn-free path)
 
 ARTIFACTS = os.path.join(ROOT, "artifacts")
+TOP_N_OUT = 100          # the submission requires a ranked top-100
 
 
 # --------------------------------------------------------------------------- #
@@ -117,7 +118,8 @@ def main():
 
     with st.expander("How this works", expanded=False):
         st.markdown(
-            "- Upload up to **100 candidates** (`.jsonl` or `.json`) or use the bundled sample.\n"
+            "- Upload candidates (`.jsonl` or `.json`) or use the bundled sample; the "
+            "sandbox scores **all** of them and returns the **top 100**.\n"
             "- Each candidate gets the **14 JD-grounded features**; a **LightGBM** model "
             "(trained offline on Claude+Groq relevance labels) scores them.\n"
             "- **Stage-2 coherence** flags impossible/honeypot profiles and demotes them.\n"
@@ -128,7 +130,7 @@ def main():
 
     booster, feat_cols, jd = load_model()
 
-    src = st.radio("Input", ["Use bundled 50-candidate sample", "Upload my own (≤100)"],
+    src = st.radio("Input", ["Use bundled 120-candidate sample", "Upload my own"],
                    horizontal=True)
     candidates = []
     if src.startswith("Use bundled"):
@@ -142,18 +144,17 @@ def main():
             st.info(f"Parsed {len(candidates)} candidates.")
 
     if candidates:
-        if len(candidates) > 100:
-            st.warning(f"Sandbox caps at 100; using the first 100 of {len(candidates)}.")
-            candidates = candidates[:100]
-
         import time
         t0 = time.time()
-        df = rank_candidates(candidates, booster, feat_cols, jd)
-        st.success(f"Ranked {len(df)} candidates in {time.time()-t0:.2f}s "
-                   f"(honeypots demoted to the bottom).")
+        df = rank_candidates(candidates, booster, feat_cols, jd)   # scores ALL provided
+        top = df.head(TOP_N_OUT)                                    # keep the ranked top 100
+        note = "" if len(df) >= TOP_N_OUT else \
+            f" (only {len(df)} supplied — provide ≥{TOP_N_OUT} to fill a full top-100)"
+        st.success(f"Scored {len(df)} candidates in {time.time()-t0:.2f}s; "
+                   f"showing the top {len(top)}{note}. Honeypots are demoted to the bottom.")
 
-        st.dataframe(df, use_container_width=True, height=460)
-        st.download_button("⬇️ Download ranked CSV", df.to_csv(index=False).encode(),
+        st.dataframe(top, use_container_width=True, height=460)
+        st.download_button("⬇️ Download ranked top-100 CSV", top.to_csv(index=False).encode(),
                            file_name="ranked_submission.csv", mime="text/csv")
 
 

@@ -34,7 +34,7 @@ redrob-candidate-ranking/
 ├── data / config (repo root)
 │   ├── jd.txt                  #   the job description
 │   ├── labels.jsonl            #   LLM/rule training labels (committed — reproduces the model)
-│   ├── sample_candidates.json  #   50-candidate demo sample
+│   ├── sample_candidates.json  #   120-candidate demo sample (yields a top-100)
 │   ├── submission.csv          #   the final ranked top-100 output
 │   ├── coherence_scores.csv    #   Stage-2 output used at inference (git-ignored)
 │   ├── coherence_ceiling.json  #   honeypot ids (git-ignored)

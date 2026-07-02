@@ -21,6 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, "_pipeline"))
 ART = os.path.join(HERE, "artifacts")
 MAX_CANDIDATES = 500
+TOP_N_OUT = 100          # the submission requires a ranked top-100
 
 _BOOSTER = None
 _COLS = None
@@ -76,6 +77,7 @@ def run_ranking(body):
                         "score": round(s - 1000.0 if hp else s, 6),
                         "cand": c, "feats": rows[i]})
     results.sort(key=lambda r: (-r["score"], r["candidate_id"]))
+    results = results[:TOP_N_OUT]          # keep the ranked top 100
 
     ranked = []
     for rank_i, r in enumerate(results, start=1):

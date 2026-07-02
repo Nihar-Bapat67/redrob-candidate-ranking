@@ -1,11 +1,13 @@
 # Redrob Candidate Ranker — Sandbox Demo
 
-The hosted demo required by **submission_spec §10.5**: accepts a small candidate
-sample (≤100), runs the ranking system **end-to-end**, and produces a ranked CSV —
+The hosted demo required by **submission_spec §10.5**: accepts a candidate sample,
+runs the ranking system **end-to-end**, and produces a ranked **top-100** CSV —
 CPU-only, well under 5 minutes.
 
 ## What it does
-- Upload ≤100 candidates (`.jsonl` or `.json`) **or** use the bundled 50-candidate sample.
+- Upload candidates (`.jsonl` or `.json`) **or** use the bundled 120-candidate sample;
+  the app scores **all** of them and returns the ranked **top 100** (feed it ≥100 to
+  fill a complete top-100).
 - Computes the **14 JD-grounded features**, scores with the **LightGBM** ranker
   (`artifacts/ranker.lgb`, trained offline on Claude+Groq relevance labels),
   applies **Stage-2 coherence** honeypot demotion, and writes **Stage-5** rank-aware
