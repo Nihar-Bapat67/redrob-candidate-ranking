@@ -13,8 +13,9 @@ cd redrob-candidate-ranking
 # 1. fetch the large FAISS artifacts (too big for git) from the GitHub Release,
 #    then extract in place. This creates artifacts/faiss.index, artifacts/embedder/,
 #    artifacts/candidate_ids.pkl and coherence_scores.csv.
-wget https://github.com/Nihar-Bapat67/redrob-candidate-ranking/releases/download/artifacts-v1.0/artifacts.tar.gz
-tar -xzf artifacts.tar.gz          # (Windows: `tar -xzf artifacts.tar.gz` works in PowerShell too)
+#    Use curl.exe -L -o  (writes straight to disk, works the same on Windows/Linux/macOS):
+curl.exe -L -o artifacts.tar.gz https://github.com/Nihar-Bapat67/redrob-candidate-ranking/releases/download/artifacts-v1.0/artifacts.tar.gz
+tar -xzf artifacts.tar.gz          # bundled tar works in PowerShell, Git Bash, Linux, macOS
 
 # 2. install inference deps
 pip install -r requirements.txt
@@ -22,6 +23,20 @@ pip install -r requirements.txt
 # 3. produce the ranked CSV (this is the command judges run)
 python rank.py --candidates ./candidates.jsonl --out ./submission.csv
 ```
+
+> ⚠️ **Windows / PowerShell — do NOT use bare `wget`.** In PowerShell `wget` is an
+> alias for `Invoke-WebRequest`, which (without `-OutFile`) downloads the file into
+> memory and prints a response object **instead of writing `artifacts.tar.gz` to
+> disk** — `tar` then fails with `Error opening archive: Failed to open
+> 'artifacts.tar.gz'` and `rank.py` crashes with `could not open
+> artifacts\faiss.index`. Use **`curl.exe -L -o artifacts.tar.gz <url>`** (the `.exe`
+> matters — it forces the real curl, not the PowerShell alias). If you must use
+> `Invoke-WebRequest`, add `-OutFile artifacts.tar.gz`.
+>
+> Verify the download before extracting — it should be ~218 MB:
+> ```powershell
+> (Get-Item artifacts.tar.gz).Length    # ~227864805 bytes
+> ```
 
 ### Why a separate download?
 
@@ -40,7 +55,7 @@ The small model itself (`artifacts/ranker.lgb`, `artifacts/feature_cols.json`) *
 committed to the repo. After extracting the release, `rank.py` loads everything from
 disk and makes **zero API calls**.
 
-> **No wget?** Download the asset from the
+> **No curl?** Download the asset from the
 > [Releases page](https://github.com/Nihar-Bapat67/redrob-candidate-ranking/releases)
 > in a browser, drop `artifacts.tar.gz` in the repo root, then `tar -xzf artifacts.tar.gz`.
 >

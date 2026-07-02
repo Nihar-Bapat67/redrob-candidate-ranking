@@ -24,7 +24,7 @@ sandbox_link: "https://TODO-streamlit-or-hf-space"                         # TOD
 # Large FAISS artifacts (faiss.index, embedder/, candidate_ids.pkl, coherence_scores.csv)
 # ship as a GitHub Release asset, not in the repo. Download + extract before running.
 artifacts_release: "https://github.com/Nihar-Bapat67/redrob-candidate-ranking/releases/download/artifacts-v1.0/artifacts.tar.gz"
-reproduce_command: "wget <artifacts_release> && tar -xzf artifacts.tar.gz && pip install -r requirements.txt && python rank.py --candidates ./candidates.jsonl --out ./submission.csv"
+reproduce_command: "curl.exe -L -o artifacts.tar.gz <artifacts_release> && tar -xzf artifacts.tar.gz && pip install -r requirements.txt && python rank.py --candidates ./candidates.jsonl --out ./submission.csv"
 
 # ============================================================================
 # Compute environment (actual)
