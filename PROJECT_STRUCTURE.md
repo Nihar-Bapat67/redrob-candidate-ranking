@@ -24,7 +24,7 @@ redrob-candidate-ranking/
 │   └── reasoning.py            #   Stage 5  · rank-aware, fact-grounded reasons
 │
 ├── artifacts/                  # MODEL + INDEX (loaded at inference)
-│   ├── ranker.lgb              #   12 KB trained model            (committed)
+│   ├── ranker.lgb              #   ~200 KB trained model            (committed)
 │   ├── feature_cols.json       #   feature order                  (committed)
 │   ├── faiss.index             #   100k vectors                   (git-ignored, rebuild via precompute.py)
 │   ├── embeddings.npy          #   raw embeddings                 (git-ignored)

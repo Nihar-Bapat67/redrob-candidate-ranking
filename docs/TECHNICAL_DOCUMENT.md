@@ -70,7 +70,7 @@ is cheap and fast. After teaching, we throw away the teacher and ship the studen
 
 Think of it like a master chef writing down their recipe. Cooking with the chef standing
 next to you is expensive. But once the recipe is written, any cook can reproduce the dish
-quickly. The **LightGBM model** is our recipe — a 12 KB file on disk.
+quickly. The **LightGBM model** is our recipe — a ~200 KB file on disk.
 
 ---
 
@@ -218,7 +218,7 @@ candidates, and get them in about 2 seconds.
 
 **Ranking (LightGBM):** For those 500, we feed the 14 features into **LightGBM**, a
 gradient-boosted decision-tree model. It outputs a relevance score for each candidate; we
-sort by that score. LightGBM is ideal here because it is tiny (12 KB), fast, runs on CPU,
+sort by that score. LightGBM is ideal here because it is tiny (~200 KB), fast, runs on CPU,
 and is **interpretable** — we can show exactly which features drove a decision.
 
 ### Stage 5 — Reasoning Generation
@@ -247,7 +247,7 @@ check for in the manual review.
 - **FAISS (Facebook AI Similarity Search):** A library that stores millions of vectors and
   finds the nearest ones in milliseconds. This is our "recall" engine.
 - **LightGBM:** A fast, small, gradient-boosted tree model. This is our "ranking brain,"
-  trained on the LLM's judgments. It is the 12 KB file we actually ship.
+  trained on the LLM's judgments. It is the ~200 KB file we actually ship.
 - **The LLM labelers (Claude + Groq/Llama-3.3):** Large language models we used **only
   offline** to read candidate profiles and rate their relevance 0–5. These ratings became
   the training data for LightGBM. They are never called during the judged run.
@@ -376,7 +376,7 @@ Both run the exact same ranking code as the real pipeline (on an uploaded sample
 A: The rule forbids API calls *during ranking*. We use the LLM only in pre-computation, to
 create training data — the same way any production ML team uses expensive tools at
 training time and a cheap model at serving time. At judging, we call nothing; we load a
-12 KB file.
+~200 KB file.
 
 **Q: Why rules for honeypots instead of a classifier?**
 A: Because a honeypot is a *logical impossibility*, not a *statistical pattern*. You can't

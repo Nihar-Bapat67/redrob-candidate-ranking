@@ -16,7 +16,7 @@ CPU-only, well under 5 minutes.
 
 > The full system uses **FAISS** to retrieve the top 500 from the 100k pool first;
 > a ≤100 sample is small enough to rank directly, which is exactly what §10.5 checks.
-> So this demo needs **no embeddings/FAISS/torch** — only the 12 KB LightGBM model.
+> So this demo needs **no embeddings/FAISS/torch** — only the ~200 KB LightGBM model.
 
 ## Run locally
 ```bash

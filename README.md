@@ -1,7 +1,7 @@
 # Redrob AI — Intelligent Candidate Ranking
 
 Ranks the top 100 candidates from `candidates.jsonl` for the released Senior AI
-Engineer JD. The ranking step is **offline, CPU-only, no network.
+Engineer JD. The ranking step is **offline, CPU-only, and needs no network**.
 
 ## TL;DR — reproduce the submission
 
@@ -85,8 +85,8 @@ This is a **knowledge-distillation** design: expensive LLM judgment is used
    `all-MiniLM-L6-v2` into a FAISS `IndexFlatIP` (the *recall* layer).
 2. **Relevance labels** (`label_llm.py` + in-session Claude): LLMs score
    candidate-JD relevance 0–5 using a fixed recruiter rubric → `labels.jsonl`.
-3. **Train ranker** (`train_ranker.py`): LightGBM `lambdarank` on 14 hand-built,
-   JD-grounded features → `artifacts/ranker.lgb`.
+3. **Train ranker** (`train_ranker.py`): LightGBM `regression` (pointwise) on 14
+   hand-built, JD-grounded features → `artifacts/ranker.lgb`.
 
 **Inference** (`rank.py`, ≤ 5 min, CPU, 16 GB, no network):
 JD → FAISS top-500 (recall) → 14 features → LightGBM re-rank (precision) →

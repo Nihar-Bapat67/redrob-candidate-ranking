@@ -14,7 +14,7 @@ vercel-dashboard/            <-- set this as the Vercel "Root Directory"
     requirements.txt         lightgbm, numpy, pandas
     _pipeline/               vendored ranking modules (jd_parser, features,
                              reasoning, coherence, canonicaliser)
-    artifacts/               ranker.lgb (12 KB) + feature_cols.json
+    artifacts/               ranker.lgb (~200 KB) + feature_cols.json
     jd.txt                   fallback JD if none is uploaded
   vercel.json                function memory/duration
 ```
