@@ -6,15 +6,46 @@ Engineer JD. The ranking step is **offline, CPU-only, no network, < 40 s**.
 ## TL;DR — reproduce the submission
 
 ```bash
-# 1. install inference deps
+# 0. clone
+git clone https://github.com/Nihar-Bapat67/redrob-candidate-ranking
+cd redrob-candidate-ranking
+
+# 1. fetch the large FAISS artifacts (too big for git) from the GitHub Release,
+#    then extract in place. This creates artifacts/faiss.index, artifacts/embedder/,
+#    artifacts/candidate_ids.pkl and coherence_scores.csv.
+wget https://github.com/Nihar-Bapat67/redrob-candidate-ranking/releases/download/artifacts-v1.0/artifacts.tar.gz
+tar -xzf artifacts.tar.gz          # (Windows: `tar -xzf artifacts.tar.gz` works in PowerShell too)
+
+# 2. install inference deps
 pip install -r requirements.txt
 
-# 2. produce the ranked CSV (this is the command judges run)
+# 3. produce the ranked CSV (this is the command judges run)
 python rank.py --candidates ./candidates.jsonl --out ./submission.csv
 ```
 
-`rank.py` loads only pre-built artifacts from `artifacts/` and makes **zero API
-calls**. If `artifacts/` is not present, build it once (see *Pre-computation*).
+### Why a separate download?
+
+The FAISS recall layer needs three large, git-ignored artifacts that exceed
+GitHub's file limits, so they ship as a versioned **GitHub Release** asset
+(`artifacts.tar.gz`, ~218 MB) instead of living in the repo:
+
+| File (extracts to) | Size | Needed at inference |
+|--------------------|-----:|:-------------------:|
+| `artifacts/faiss.index`         | 147 MB | ✅ FAISS recall over the 100k pool |
+| `artifacts/embedder/`           |  88 MB | ✅ local MiniLM (embeds the JD query, no network) |
+| `artifacts/candidate_ids.pkl`   | 1.5 MB | ✅ FAISS row → candidate_id map |
+| `coherence_scores.csv`          | 6.1 MB | ✅ Stage-2 honeypot / coherence signal |
+
+The small model itself (`artifacts/ranker.lgb`, `artifacts/feature_cols.json`) **is**
+committed to the repo. After extracting the release, `rank.py` loads everything from
+disk and makes **zero API calls**.
+
+> **No wget?** Download the asset from the
+> [Releases page](https://github.com/Nihar-Bapat67/redrob-candidate-ranking/releases)
+> in a browser, drop `artifacts.tar.gz` in the repo root, then `tar -xzf artifacts.tar.gz`.
+>
+> **Prefer to rebuild instead of download?** Run `python src/pipeline/precompute.py`
+> (~45 min, CPU) to regenerate the exact same artifacts from source.
 
 ## Architecture (two phases)
 

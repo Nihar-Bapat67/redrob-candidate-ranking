@@ -54,3 +54,6 @@ test.py
 
 # doc build helper
 _md2docx.py
+
+# Release bundle (uploaded to GitHub Releases, not committed)
+*.tar.gz
