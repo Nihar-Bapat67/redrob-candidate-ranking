@@ -19,8 +19,8 @@ team_members:
 # ============================================================================
 # Code and reproducibility
 # ============================================================================
-github_repo: "https://github.com/Nihar-Bapat67/redrob-candidate-ranking"  # TODO create + confirm
-sandbox_link: "https://TODO-streamlit-or-hf-space"                         # TODO (spec 10.5)
+github_repo: "https://github.com/Nihar-Bapat67/redrob-candidate-ranking"
+sandbox_link: "https://huggingface.co/spaces/NiharBapat/redrob-candidate-ranker"   # hosted Streamlit sandbox (spec 10.5)
 # Large FAISS artifacts (faiss.index, embedder/, candidate_ids.pkl, coherence_scores.csv)
 # ship as a GitHub Release asset, not in the repo. Download + extract before running.
 artifacts_release: "https://github.com/Nihar-Bapat67/redrob-candidate-ranking/releases/download/artifacts-v1.0/artifacts.tar.gz"
