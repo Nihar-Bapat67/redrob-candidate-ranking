@@ -4,7 +4,7 @@
 # ============================================================================
 # Team identity
 # ============================================================================
-team_name: "Builders1o1"            # TODO
+team_name: "Builders101"            # TODO
 
 primary_contact:
   name: "Nihar Bapat"                        # TODO confirm
@@ -14,7 +14,13 @@ primary_contact:
 team_members:
   - name: "Nihar Bapat"                      # TODO confirm / add members
     email: "niharbapat15@gmail.com"
-    role: "ML Engineer"
+    role: "ML Engineer and total project Lead worked on figuring out the total 5 level architecture and design of the system . (System Design and model traning)"
+    name: "Mihir Bapat"
+    email: "mihirbapat15@gmail.com"
+    role: "Build data validation pipeline effectivel decreasing the honeypots on later stages of pipeline."
+    name: "Ayush Shevde"
+    email: "ayush.shevde7@gmail.com"
+    role: "Deployment of both hugging face sandbox and on vercel host. Also worked on system architecture of building the FAISS retrieval index."
                                     
 # ============================================================================
 # Code and reproducibility
