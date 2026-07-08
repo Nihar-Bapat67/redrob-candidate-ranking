@@ -4,134 +4,344 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Redrob AI — Candidate Ranking Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
   :root{
-    --bg:#0b1020; --card:#141b32; --card2:#1b2444; --ink:#e8ecf8; --muted:#93a0c4;
-    --brand:#6c8bff; --brand2:#9d7bff; --good:#3fd6a0; --warn:#ffb454; --line:#26314f;
+    --bg:#0B1020; --card:#11182D; --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+    --accent:#7C5CFF; --accent2:#4FD1FF; --good:#22C55E; --bad:#EF4444; --warn:#F5B547;
+    --ink:#FFFFFF; --muted:#AAB3CF;
+    --glass:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+    --shadow:0 24px 60px -20px rgba(0,0,0,.6);
+    --radius:20px;
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Inter,sans-serif;background:
-       radial-gradient(1200px 600px at 80% -10%,#1a2350 0,transparent 60%),
-       radial-gradient(900px 500px at -10% 10%,#22184a 0,transparent 55%),var(--bg);
-       color:var(--ink);min-height:100vh}
-  .wrap{max-width:1060px;margin:0 auto;padding:34px 20px 70px}
-  header{display:flex;align-items:center;gap:14px;margin-bottom:6px}
-  .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand2));
-        display:grid;place-items:center;font-size:22px;box-shadow:0 8px 26px rgba(108,139,255,.45)}
-  h1{font-size:23px;margin:0;letter-spacing:.2px}
-  .sub{color:var(--muted);font-size:13.5px;margin:2px 0 26px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  @media(max-width:760px){.grid{grid-template-columns:1fr}}
-  .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);
-        border-radius:16px;padding:18px}
-  .card h3{margin:0 0 4px;font-size:14.5px}
-  .card p{margin:0 0 12px;color:var(--muted);font-size:12.5px}
-  .drop{border:1.5px dashed #36426a;border-radius:12px;padding:20px;text-align:center;cursor:pointer;
-        transition:.18s;background:#0e1428}
-  .drop:hover{border-color:var(--brand);background:#101a38}
-  .drop.has{border-color:var(--good);background:#0f2030}
-  .drop .ic{font-size:26px}
-  .drop .t{font-size:13px;margin-top:6px}
-  .drop .f{font-size:12px;color:var(--good);margin-top:6px;word-break:break-all}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;color:var(--ink);min-height:100vh;
+    font-family:"Inter",-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    line-height:1.5;overflow-x:hidden;
+  }
+
+  /* ---------- animated background blobs ---------- */
+  .bgfx{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+  .blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.35;will-change:transform}
+  .blob.b1{width:620px;height:620px;top:-220px;right:-140px;
+    background:radial-gradient(circle,#7C5CFF 0,transparent 65%);animation:float1 18s ease-in-out infinite}
+  .blob.b2{width:560px;height:560px;bottom:-200px;left:-160px;
+    background:radial-gradient(circle,#4FD1FF 0,transparent 65%);opacity:.28;animation:float2 22s ease-in-out infinite}
+  .blob.b3{width:420px;height:420px;top:38%;left:44%;
+    background:radial-gradient(circle,#9A7CFF 0,transparent 60%);opacity:.20;animation:float1 26s ease-in-out infinite reverse}
+  .bgfx::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(1200px 600px at 80% -10%,rgba(124,92,255,.10),transparent 60%),
+               radial-gradient(900px 500px at -10% 10%,rgba(79,209,255,.08),transparent 55%)}
+  @keyframes float1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-40px,50px) scale(1.08)}}
+  @keyframes float2{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(50px,-40px) scale(1.1)}}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:1300px;margin:0 auto;padding:56px 32px 40px}
+  section{margin-top:44px}
+
+  /* ---------- entrance animations ---------- */
+  .reveal{opacity:0;transform:translateY(16px);animation:fadeUp .7s cubic-bezier(.2,.7,.2,1) forwards}
+  @keyframes fadeUp{to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{animation:none;opacity:1;transform:none}
+    .blob{animation:none}
+  }
+
+  /* ---------- hero ---------- */
+  .hero{display:flex;gap:20px;align-items:flex-start}
+  .logo{flex:none;width:60px;height:60px;border-radius:18px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    display:grid;place-items:center;color:#fff;
+    box-shadow:0 16px 40px -8px rgba(124,92,255,.6),inset 0 1px 0 rgba(255,255,255,.35)}
+  .logo svg{width:30px;height:30px}
+  h1{font-size:clamp(34px,5vw,52px);line-height:1.05;margin:0;font-weight:800;letter-spacing:-.02em}
+  .hero .sub{color:var(--muted);font-size:18px;margin:12px 0 0;max-width:640px}
+  .badges{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+  .badge{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:999px;
+    background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(12px);
+    font-size:13px;font-weight:500;color:#dfe4f5}
+  .badge svg{width:14px;height:14px;color:var(--good)}
+
+  /* ---------- cards ---------- */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .card{background:var(--card);background-image:var(--glass);border:1px solid var(--line);
+    border-radius:var(--radius);padding:26px;backdrop-filter:blur(14px);box-shadow:var(--shadow);
+    transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+  .card:hover{transform:translateY(-3px);border-color:var(--line2)}
+  .card .num{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:8px;
+    background:rgba(124,92,255,.18);color:#c9bcff;font-size:13px;font-weight:700;margin-right:10px}
+  .card h3{margin:0;font-size:20px;font-weight:700;display:flex;align-items:center}
+  .card p{margin:8px 0 20px;color:var(--muted);font-size:14px}
+
+  /* ---------- dropzone ---------- */
+  .drop{display:block;border:1.6px dashed var(--line2);border-radius:16px;padding:30px 20px;
+    text-align:center;cursor:pointer;background:rgba(255,255,255,.02);
+    transition:border-color .2s ease,background .2s ease,box-shadow .2s ease,transform .2s ease}
+  .drop:hover{border-color:var(--accent);background:rgba(124,92,255,.06)}
+  .drop.drag{border-color:var(--accent2);background:rgba(79,209,255,.08);
+    box-shadow:0 0 0 4px rgba(79,209,255,.18);transform:scale(1.01)}
+  .drop.has{border-style:solid;border-color:rgba(34,197,94,.5);background:rgba(34,197,94,.05)}
+  .drop .dic{width:56px;height:56px;margin:0 auto;border-radius:14px;display:grid;place-items:center;
+    background:linear-gradient(135deg,rgba(124,92,255,.22),rgba(79,209,255,.18));color:#e7e2ff;
+    transition:transform .3s ease}
+  .drop:hover .dic{transform:translateY(-2px) rotate(-4deg)}
+  .drop .dic svg{width:26px;height:26px}
+  .drop .t{font-size:14.5px;font-weight:600;margin-top:14px}
+  .drop .h{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .drop .f{margin-top:4px}
   input[type=file]{display:none}
-  .row{display:flex;gap:12px;align-items:center;margin-top:20px;flex-wrap:wrap}
-  .btn{appearance:none;border:0;cursor:pointer;border-radius:12px;padding:13px 22px;font-weight:600;font-size:14.5px;
-       background:linear-gradient(135deg,var(--brand),var(--brand2));color:white;
-       box-shadow:0 10px 26px rgba(108,139,255,.4);transition:.18s}
-  .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
-  .btn.ghost,.ghost{background:#172240;border:1px solid var(--line);box-shadow:none;color:var(--ink)}
-  /* pipeline */
-  .pipe{margin-top:26px;display:none}
-  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-  @media(max-width:760px){.steps{grid-template-columns:1fr 1fr}}
-  .step{background:#101733;border:1px solid var(--line);border-radius:14px;padding:16px;position:relative;opacity:.5;transition:.35s}
-  .step.active{opacity:1;border-color:var(--brand);box-shadow:0 0 0 1px var(--brand) inset, 0 8px 24px rgba(108,139,255,.25)}
-  .step.done{opacity:1;border-color:var(--good)}
-  .step .si{font-size:22px}
-  .step .sn{font-size:13px;font-weight:600;margin-top:8px}
-  .step .sd{font-size:11.5px;color:var(--muted);margin-top:3px;min-height:16px}
-  .bar{height:5px;border-radius:6px;background:#222c4d;overflow:hidden;margin-top:12px}
-  .bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--brand2));transition:width .9s linear}
-  .step.done .bar > i{width:100% !important;background:var(--good)}
-  .spin{width:13px;height:13px;border:2px solid #3a466f;border-top-color:var(--brand);
-        border-radius:50%;display:inline-block;vertical-align:-2px;animation:sp .7s linear infinite}
+
+  .chip{display:inline-flex;align-items:center;gap:8px;margin-top:16px;padding:9px 13px;border-radius:12px;
+    font-size:13px;font-weight:500;background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.28);color:#c9f5d9;
+    max-width:100%}
+  .chip svg{width:16px;height:16px;flex:none;color:var(--good)}
+  .chip .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:210px}
+  .chip .mt{color:var(--muted);font-weight:400;flex:none}
+  .chip.loading{background:rgba(79,209,255,.10);border-color:rgba(79,209,255,.28);color:#bfeaff}
+  .chip.loading svg{color:var(--accent2)}
+  .chip.warn{background:rgba(245,181,71,.10);border-color:rgba(245,181,71,.3);color:#f6dcaf}
+  .chip.warn svg{color:var(--warn)}
+  .chip.bad{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.3);color:#f6b6b6}
+  .chip.bad svg{color:var(--bad)}
+
+  /* ---------- action row ---------- */
+  .actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .btn{appearance:none;border:0;cursor:pointer;border-radius:14px;padding:14px 24px;font-family:inherit;
+    font-weight:600;font-size:15px;display:inline-flex;align-items:center;gap:9px;color:#fff;
+    background:linear-gradient(135deg,#7C5CFF,#9A7CFF);
+    box-shadow:0 14px 34px -10px rgba(124,92,255,.7),inset 0 1px 0 rgba(255,255,255,.25);
+    transition:transform .15s ease,box-shadow .2s ease,opacity .2s ease}
+  .btn svg{width:17px;height:17px}
+  .btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 20px 42px -10px rgba(124,92,255,.8)}
+  .btn:active:not(:disabled){transform:translateY(0) scale(.98)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+  .btn.ghost{background:var(--glass);border:1px solid var(--line2);backdrop-filter:blur(12px);
+    box-shadow:none;color:#e7ebfa}
+  .btn.ghost:hover:not(:disabled){background:rgba(255,255,255,.08);transform:translateY(-2px)}
+
+  /* status panel */
+  .status{margin-left:auto;display:inline-flex;align-items:center;gap:10px;padding:11px 16px;border-radius:999px;
+    background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(12px);font-size:13.5px;
+    color:#dfe4f5;font-weight:500}
+  .status .dot{width:10px;height:10px;border-radius:50%;background:var(--warn);
+    box-shadow:0 0 0 4px rgba(245,181,71,.18);animation:pulseDot 2s ease-in-out infinite}
+  .status.ranking .dot{animation:pulseDot .9s ease-in-out infinite}
+  @keyframes pulseDot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.7}}
+
+  /* ---------- pipeline overview (static) ---------- */
+  .panel{background:var(--card);background-image:var(--glass);border:1px solid var(--line);
+    border-radius:var(--radius);padding:26px 28px;backdrop-filter:blur(14px);box-shadow:var(--shadow)}
+  .panel .ph{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 20px}
+  .flow{display:flex;align-items:stretch;gap:6px;overflow-x:auto;padding-bottom:6px}
+  .flow::-webkit-scrollbar{height:6px}.flow::-webkit-scrollbar-thumb{background:var(--line2);border-radius:6px}
+  .fnode{flex:1;min-width:120px;display:flex;flex-direction:column;align-items:center;gap:10px;
+    padding:16px 10px;border-radius:14px;background:rgba(255,255,255,.02);border:1px solid var(--line);text-align:center}
+  .fnode .fi{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;
+    background:linear-gradient(135deg,rgba(124,92,255,.2),rgba(79,209,255,.16));color:#e7e2ff}
+  .fnode .fi svg{width:20px;height:20px}
+  .fnode .fl{font-size:12.5px;font-weight:600}
+  .farrow{flex:none;display:grid;place-items:center;color:#4a5578}
+  .farrow svg{width:20px;height:20px}
+
+  /* ---------- live pipeline ---------- */
+  .pipe{display:none}
+  .steps{display:flex;align-items:stretch;gap:6px}
+  .step{flex:1;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:16px;padding:18px;
+    opacity:.45;transition:opacity .35s ease,border-color .35s ease,box-shadow .35s ease,transform .35s ease}
+  .step.active{opacity:1;border-color:var(--accent);transform:translateY(-2px);
+    box-shadow:0 0 0 1px var(--accent) inset,0 16px 34px -14px rgba(124,92,255,.5)}
+  .step.done{opacity:1;border-color:rgba(34,197,94,.5)}
+  .step .si{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+    background:rgba(124,92,255,.15);color:#cfc6ff}
+  .step.done .si{background:rgba(34,197,94,.15);color:#8ff0b6}
+  .step .si svg{width:19px;height:19px}
+  .step .sn{font-size:13.5px;font-weight:600;margin-top:12px}
+  .step .sd{font-size:12px;color:var(--muted);margin-top:5px;min-height:18px;display:flex;align-items:center;gap:6px}
+  .bar{height:5px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:14px}
+  .bar>i{display:block;height:100%;width:0;border-radius:6px;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .9s linear}
+  .step.done .bar>i{width:100%!important;background:var(--good)}
+  .parrow{flex:none;align-self:center;color:#4a5578}
+  .parrow svg{width:20px;height:20px}
+  .spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:var(--accent2);
+    border-radius:50%;display:inline-block;animation:sp .7s linear infinite}
   @keyframes sp{to{transform:rotate(360deg)}}
-  .check{color:var(--good);font-weight:700}
-  /* results */
-  .results{margin-top:26px;display:none}
-  .rhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px}
-  .pill{background:#172240;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12px;color:var(--muted)}
-  .pill b{color:var(--ink)}
-  .tablewrap{max-height:520px;overflow:auto;border:1px solid var(--line);border-radius:14px}
-  table{width:100%;border-collapse:collapse;font-size:12.5px}
-  th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #1e2742;vertical-align:top}
-  th{position:sticky;top:0;background:#131b34;color:var(--muted);font-weight:600;z-index:1}
-  tr:hover td{background:#121a33}
-  .rk{font-weight:700;color:var(--brand)}
-  .demoted td{opacity:.55}
-  .err{color:#ff7d7d;font-size:13px;margin-top:12px}
-  .foot{color:var(--muted);font-size:11.5px;margin-top:26px;line-height:1.6}
+  .check{color:var(--good);display:inline-flex}.check svg{width:14px;height:14px}
+
+  /* ---------- results ---------- */
+  .results{display:none}
+  .rhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+  .pills{display:flex;gap:10px;flex-wrap:wrap}
+  .pill{display:inline-flex;align-items:center;gap:7px;background:var(--glass);border:1px solid var(--line);
+    border-radius:999px;padding:8px 14px;font-size:13px;color:var(--muted)}
+  .pill b{color:var(--ink);font-weight:700}
+  .pill svg{width:14px;height:14px;color:var(--accent2)}
+  .tablewrap{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.015)}
+  .tablewrap::-webkit-scrollbar{width:8px;height:8px}.tablewrap::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{position:sticky;top:0;background:#0f1730;color:var(--muted);font-weight:600;z-index:1;
+    font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  tbody tr{transition:background .15s ease}
+  tr:hover td{background:rgba(124,92,255,.06)}
+  .rk{font-weight:800;color:var(--accent2)}
+  .demoted td{opacity:.5}
+  .demoted .tag{color:var(--bad);font-weight:600}
+
+  .err{color:#ff9a9a;font-size:14px;margin-top:16px}
+  .err:empty{display:none}
+
+  /* ---------- how it works ---------- */
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .tile{padding:20px;border-radius:16px;background:rgba(255,255,255,.02);border:1px solid var(--line);
+    transition:transform .25s ease,border-color .25s ease,background .25s ease}
+  .tile:hover{transform:translateY(-3px);border-color:var(--line2);background:rgba(255,255,255,.035)}
+  .tile .ti{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;margin-bottom:14px;
+    background:linear-gradient(135deg,rgba(124,92,255,.2),rgba(79,209,255,.16));color:#e7e2ff}
+  .tile .ti svg{width:21px;height:21px}
+  .tile h4{margin:0 0 6px;font-size:15px;font-weight:700}
+  .tile p{margin:0;font-size:13px;color:var(--muted);line-height:1.55}
+
+  /* ---------- footer ---------- */
+  footer{margin-top:56px;padding-top:28px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    color:var(--muted);font-size:13px}
+  footer .pw b{color:#dfe4f5;font-weight:600}
+  footer a{color:var(--accent2);text-decoration:none}
+  footer a:hover{text-decoration:underline}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:900px){
+    .tiles{grid-template-columns:repeat(2,1fr)}
+  }
+  @media (max-width:820px){
+    .grid{grid-template-columns:1fr}
+    .steps{flex-direction:column}
+    .parrow{transform:rotate(90deg)}
+  }
+  @media (max-width:560px){
+    .wrap{padding:36px 18px 32px}
+    .hero{gap:14px}
+    .status{margin-left:0;width:100%;justify-content:center}
+    .btn{flex:1 1 100%;justify-content:center}
+    .tiles{grid-template-columns:1fr}
+  }
 </style>
 </head>
 <body>
+<div class="bgfx"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+
 <div class="wrap">
-  <header>
-    <div class="logo">🎯</div>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero reveal" style="animation-delay:.02s">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+    </div>
     <div>
-      <h1>Redrob AI — Candidate Ranking Engine</h1>
-      <div class="sub">Distilled LLM judgment · LightGBM learning-to-rank · honeypot-aware · CPU-only</div>
+      <h1>Redrob AI</h1>
+      <p class="sub">AI-powered Candidate Ranking Engine — distilled LLM judgment re-ranked by a honeypot-aware LightGBM model.</p>
+      <div class="badges" aria-label="capabilities">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Distilled LLM</span>
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Learning-to-Rank</span>
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Honeypot Detection</span>
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> CPU Optimized</span>
+      </div>
     </div>
   </header>
 
-  <div class="grid">
-    <div class="card">
-      <h3>1 · Job Description</h3>
-      <p>Upload the role JD as a <b>PDF</b> (parsed in your browser).</p>
+  <!-- ============ INPUT CARDS ============ -->
+  <section class="grid">
+    <div class="card reveal" style="animation-delay:.08s">
+      <h3><span class="num">1</span>Job Description</h3>
+      <p>Upload the role JD as a <b>PDF</b> — parsed entirely in your browser.</p>
       <label class="drop" id="jdDrop">
-        <div class="ic">📄</div>
+        <div class="dic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
         <div class="t">Click or drop a PDF</div>
+        <div class="h">.pdf · text extracted locally</div>
         <div class="f" id="jdFile"></div>
-        <input type="file" id="jdInput" accept="application/pdf" />
+        <input type="file" id="jdInput" accept="application/pdf" aria-label="Upload job description PDF" />
       </label>
     </div>
-    <div class="card">
-      <h3>2 · Candidate Pool</h3>
-      <p>Upload candidates as <b>.jsonl</b> or <b>.json</b> (≤ 500 for the live demo).</p>
+    <div class="card reveal" style="animation-delay:.14s">
+      <h3><span class="num">2</span>Candidate Pool</h3>
+      <p>Upload candidates as <b>.jsonl</b> or <b>.json</b> — up to 500 for the live demo.</p>
       <label class="drop" id="cDrop">
-        <div class="ic">👥</div>
+        <div class="dic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
         <div class="t">Click or drop candidates file</div>
+        <div class="h">.jsonl / .json · ≤ 500 records</div>
         <div class="f" id="cFile"></div>
-        <input type="file" id="cInput" accept=".jsonl,.json,application/json" />
+        <input type="file" id="cInput" accept=".jsonl,.json,application/json" aria-label="Upload candidates file" />
       </label>
     </div>
-  </div>
+  </section>
 
-  <div class="row">
-    <button class="btn" id="rankBtn" disabled>⚡ Proceed to Rank</button>
-    <button class="btn ghost" id="sampleBtn">Use sample data (120)</button>
-    <span class="pill" id="status">Awaiting input…</span>
-  </div>
-
-  <!-- PIPELINE VISUALIZATION -->
-  <div class="pipe" id="pipe">
-    <div class="steps">
-      <div class="step" data-k="honeypot"><div class="si">🛡️</div><div class="sn">Removing honeypots</div><div class="sd" id="sd0">outlier / impossible profiles</div><div class="bar"><i></i></div></div>
-      <div class="step" data-k="faiss"><div class="si">🧲</div><div class="sn">Semantic retrieval (FAISS)</div><div class="sd" id="sd1">match candidates to the JD</div><div class="bar"><i></i></div></div>
-      <div class="step" data-k="lgbm"><div class="si">🌳</div><div class="sn">LightGBM ranker</div><div class="sd" id="sd2">14-feature precision scoring</div><div class="bar"><i></i></div></div>
-      <div class="step" data-k="reason"><div class="si">✍️</div><div class="sn">Reasoning</div><div class="sd" id="sd3">grounded, rank-aware notes</div><div class="bar"><i></i></div></div>
+  <!-- ============ ACTIONS + STATUS ============ -->
+  <section class="actions reveal" style="animation-delay:.2s">
+    <button class="btn" id="rankBtn" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+      Proceed to Rank
+    </button>
+    <button class="btn ghost" id="sampleBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Use sample data (120)
+    </button>
+    <div class="status" id="statusPanel" role="status" aria-live="polite">
+      <span class="dot" id="statusDot"></span><span id="statusText">Waiting for files</span>
     </div>
-  </div>
+  </section>
 
-  <!-- RESULTS -->
-  <div class="results" id="results">
+  <!-- ============ PIPELINE OVERVIEW (static) ============ -->
+  <section class="panel reveal" style="animation-delay:.24s" aria-label="Pipeline overview">
+    <p class="ph">Ranking pipeline</p>
+    <div class="flow">
+      <div class="fnode"><div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><div class="fl">JD PDF</div></div>
+      <div class="farrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="fnode"><div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div><div class="fl">Resume Dataset</div></div>
+      <div class="farrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="fnode"><div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div><div class="fl">Feature Extraction</div></div>
+      <div class="farrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="fnode"><div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg></div><div class="fl">LightGBM Ranking</div></div>
+      <div class="farrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="fnode"><div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div><div class="fl">Reasoning</div></div>
+      <div class="farrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="fnode"><div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h2a2 2 0 0 1 0 4h-.5"/><path d="M7 5H5a2 2 0 0 0 0 4h.5"/></svg></div><div class="fl">Top Candidates</div></div>
+    </div>
+  </section>
+
+  <!-- ============ LIVE PIPELINE ============ -->
+  <section class="panel pipe reveal" id="pipe" style="animation-delay:0s" aria-label="Live ranking progress">
+    <p class="ph">Processing</p>
+    <div class="steps">
+      <div class="step" data-k="honeypot"><div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="sn">Removing honeypots</div><div class="sd" id="sd0">outlier / impossible profiles</div><div class="bar"><i></i></div></div>
+      <div class="parrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="step" data-k="faiss"><div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="sn">Semantic retrieval</div><div class="sd" id="sd1">match candidates to the JD</div><div class="bar"><i></i></div></div>
+      <div class="parrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="step" data-k="lgbm"><div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg></div><div class="sn">LightGBM ranker</div><div class="sd" id="sd2">14-feature precision scoring</div><div class="bar"><i></i></div></div>
+      <div class="parrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="step" data-k="reason"><div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div><div class="sn">Reasoning</div><div class="sd" id="sd3">grounded, rank-aware notes</div><div class="bar"><i></i></div></div>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="results" id="results" aria-label="Ranking results">
     <div class="rhead">
-      <div>
-        <span class="pill"><b id="rTotal">0</b> ranked</span>
-        <span class="pill">🛡️ <b id="rHp">0</b> honeypots demoted</span>
-        <span class="pill">⏱️ <b id="rTime">0</b>s</span>
+      <div class="pills">
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg><b id="rTotal">0</b> ranked</span>
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><b id="rHp">0</b> honeypots demoted</span>
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><b id="rTime">0</b>s</span>
       </div>
-      <button class="btn" id="dlBtn">⬇️ Download ranked CSV</button>
+      <button class="btn" id="dlBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download CSV
+      </button>
     </div>
     <div class="tablewrap">
       <table>
@@ -139,14 +349,33 @@
         <tbody id="rbody"></tbody>
       </table>
     </div>
-  </div>
+  </section>
 
-  <div class="err" id="err"></div>
-  <div class="foot">
-    The full system retrieves the top-500 from a 100k pool with FAISS, then re-ranks with this LightGBM model.
-    For the live demo (and to fit a serverless function) candidates you upload are scored directly — the same
-    honeypot-removal → feature-matrix → LightGBM → reasoning pipeline, minus the 100k embedding step.
-  </div>
+  <div class="err" id="err" role="alert"></div>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section class="panel reveal" style="animation-delay:.28s" aria-label="How it works">
+    <p class="ph">How it works</p>
+    <div class="tiles">
+      <div class="tile"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><h4>FAISS Retrieval</h4><p>Dense-vector search over the full 100k pool using MiniLM embeddings.</p></div>
+      <div class="tile"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div><h4>Top-500 Recall</h4><p>Cheap recall stage narrows 100k candidates down to the 500 most relevant.</p></div>
+      <div class="tile"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg></div><h4>Feature Engineering</h4><p>14 JD-grounded features — domain fit, seniority, product vs services, availability.</p></div>
+      <div class="tile"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="3" x2="6" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></svg></div><h4>LightGBM Ranker</h4><p>A LambdaRank model distilled from LLM relevance labels re-ranks for precision.</p></div>
+      <div class="tile"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div><h4>Reasoning Layer</h4><p>Fact-grounded, rank-aware notes assembled from real profile values — no hallucination.</p></div>
+      <div class="tile"><div class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><h4>Honeypot Detection</h4><p>Deterministic checks flag impossible timelines and inflated skills, then demote them.</p></div>
+    </div>
+    <p style="margin:22px 0 0;color:var(--muted);font-size:13px;line-height:1.6">
+      The full system retrieves the top-500 from a 100k pool with FAISS, then re-ranks with this LightGBM model.
+      For the live demo (to fit a serverless function) uploaded candidates are scored directly — the same
+      honeypot-removal → feature-matrix → LightGBM → reasoning pipeline, minus the 100k embedding step.
+    </p>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="pw">Powered by <b>Distilled LLM + LightGBM + FAISS</b></div>
+    <div>Redrob AI · Candidate Ranking Engine</div>
+  </footer>
 </div>
 
 <script>
@@ -154,78 +383,144 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs
 const $ = s => document.querySelector(s);
 let jdText = "", candidates = null;
 
-function refresh(){ $("#rankBtn").disabled = !candidates || candidates.length===0; }
+const statusPanel = $("#statusPanel"), statusDot = $("#statusDot"), statusText = $("#statusText");
+const STATUS = {
+  waiting:{c:"#F5B547", t:"Waiting for files"},
+  parsing:{c:"#4FD1FF", t:"Parsing PDF…"},
+  loading:{c:"#4FD1FF", t:"Loading sample…"},
+  ready:  {c:"#22C55E", t:"Ready to rank"},
+  ranking:{c:"#7C5CFF", t:"Ranking candidates…"},
+  done:   {c:"#22C55E", t:"Done"},
+  error:  {c:"#EF4444", t:"Error"},
+};
+function setStatus(k, override){
+  const s = STATUS[k] || STATUS.waiting;
+  statusDot.style.background = s.c;
+  statusDot.style.boxShadow = "0 0 0 4px " + s.c + "2e";
+  statusText.textContent = override || s.t;
+  statusPanel.classList.toggle("ranking", k === "ranking");
+}
+setStatus("waiting");
+
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+function fmtSize(b){ if(b==null) return ""; if(b<1024) return b+" B"; if(b<1048576) return (b/1024).toFixed(1)+" KB"; return (b/1048576).toFixed(1)+" MB"; }
+function fileChip(name, meta){ return '<span class="chip">'+CHECK+'<span class="nm">'+esc(name)+'</span><span class="mt">'+esc(meta)+'</span></span>'; }
+
+function refresh(){ $("#rankBtn").disabled = !candidates || candidates.length === 0; }
 
 // ---- JD PDF ----
-$("#jdInput").addEventListener("change", async e=>{
-  const f = e.target.files[0]; if(!f) return;
-  $("#jdFile").textContent = "Reading "+f.name+" …";
+async function handleJD(f){
+  if(!f) return;
+  $("#jdFile").innerHTML = '<span class="chip loading">'+CHECK+'<span class="nm">Reading '+esc(f.name)+'…</span></span>';
+  setStatus("parsing");
   try{
     const buf = await f.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({data:buf}).promise;
-    let txt="";
+    let txt = "";
     for(let p=1;p<=pdf.numPages;p++){ const pg=await pdf.getPage(p); const c=await pg.getTextContent();
       txt += c.items.map(i=>i.str).join(" ")+"\n"; }
     jdText = txt.trim();
-    $("#jdFile").textContent = "✓ "+f.name+"  ("+jdText.length+" chars extracted)";
+    $("#jdFile").innerHTML = fileChip(f.name, fmtSize(f.size)+" · "+jdText.length+" chars");
     $("#jdDrop").classList.add("has");
-  }catch(err){ $("#jdFile").textContent = "Could not parse PDF — the bundled JD will be used."; }
-});
+  }catch(err){
+    $("#jdFile").innerHTML = '<span class="chip warn">Could not parse PDF — the bundled JD will be used.</span>';
+  }
+  setStatus(candidates && candidates.length ? "ready" : "waiting");
+}
+$("#jdInput").addEventListener("change", e=>handleJD(e.target.files[0]));
 
 // ---- candidates ----
 function parseCandidates(text){
-  text=text.trim(); let arr=[];
-  try{ const d=JSON.parse(text); arr = Array.isArray(d)?d:[d]; }
+  text = text.trim(); let arr = [];
+  try{ const d = JSON.parse(text); arr = Array.isArray(d) ? d : [d]; }
   catch(_){ arr = text.split(/\r?\n/).filter(Boolean).map(l=>JSON.parse(l)); }
   return arr.filter(c=>c && c.candidate_id);
 }
-$("#cInput").addEventListener("change", async e=>{
-  const f=e.target.files[0]; if(!f) return;
-  try{ candidates = parseCandidates(await f.text());
-    $("#cFile").textContent = "✓ "+f.name+"  ("+candidates.length+" candidates)";
-    $("#cDrop").classList.add("has"); $("#status").textContent="Ready to rank";
-  }catch(err){ $("#cFile").textContent="Invalid file: "+err.message; candidates=null; }
+async function handleCandidates(f){
+  if(!f) return;
+  try{
+    const text = await f.text();
+    candidates = parseCandidates(text);
+    if(!candidates.length) throw new Error("no valid candidate_id rows found");
+    $("#cFile").innerHTML = fileChip(f.name, fmtSize(f.size)+" · "+candidates.length+" candidates");
+    $("#cDrop").classList.add("has");
+    setStatus("ready");
+  }catch(err){
+    $("#cFile").innerHTML = '<span class="chip bad">Invalid file: '+esc(err.message)+'</span>';
+    candidates = null;
+    $("#cDrop").classList.remove("has");
+    setStatus("waiting");
+  }
   refresh();
-});
+}
+$("#cInput").addEventListener("change", e=>handleCandidates(e.target.files[0]));
+
+// ---- drag & drop ----
+function wireDrop(id, kind){
+  const el = $("#"+id);
+  ["dragenter","dragover"].forEach(ev=>el.addEventListener(ev, e=>{ e.preventDefault(); el.classList.add("drag"); }));
+  ["dragleave","dragend","drop"].forEach(ev=>el.addEventListener(ev, e=>{ e.preventDefault(); el.classList.remove("drag"); }));
+  el.addEventListener("drop", e=>{
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if(!f) return;
+    kind === "jd" ? handleJD(f) : handleCandidates(f);
+  });
+}
+wireDrop("jdDrop","jd");
+wireDrop("cDrop","cand");
+
+// ---- sample ----
 $("#sampleBtn").addEventListener("click", async ()=>{
-  $("#status").textContent="Loading sample…";
-  const r=await fetch("/sample_candidates.json"); candidates=await r.json();
-  $("#cFile").textContent="✓ sample_candidates.json ("+candidates.length+" candidates)";
-  $("#cDrop").classList.add("has"); $("#status").textContent="Ready to rank"; refresh();
+  setStatus("loading");
+  try{
+    const r = await fetch("/sample_candidates.json");
+    candidates = await r.json();
+    $("#cFile").innerHTML = fileChip("sample_candidates.json", candidates.length+" candidates");
+    $("#cDrop").classList.add("has");
+    setStatus("ready");
+  }catch(e){ setStatus("error","Could not load sample"); }
+  refresh();
 });
 
 // ---- pipeline animation ----
-const steps=[...document.querySelectorAll(".step")];
-function resetSteps(){ steps.forEach(s=>{s.classList.remove("active","done"); s.querySelector(".bar>i").style.width="0"; }); }
+const steps = [...document.querySelectorAll(".step")];
+function resetSteps(){ steps.forEach(s=>{ s.classList.remove("active","done"); s.querySelector(".bar>i").style.width="0"; }); }
 function setStage(i, sub){
-  steps.forEach((s,k)=>{ if(k<i){s.classList.add("done");s.classList.remove("active");}
-    else if(k===i){s.classList.add("active"); s.querySelector(".bar>i").style.width="100%";} });
+  steps.forEach((s,k)=>{ if(k<i){ s.classList.add("done"); s.classList.remove("active"); }
+    else if(k===i){ s.classList.add("active"); s.querySelector(".bar>i").style.width="100%"; } });
   if(sub!=null) $("#sd"+i).innerHTML = '<span class="spin"></span> '+sub;
 }
 function doneStage(i, sub){ steps[i].classList.add("done"); steps[i].classList.remove("active");
-  $("#sd"+i).innerHTML = '<span class="check">✓</span> '+sub; }
+  $("#sd"+i).innerHTML = '<span class="check">'+CHECK+'</span> '+sub; }
 
 // ---- rank ----
 const API_BASE = (window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost')
   ? 'http://127.0.0.1:8899' : '';
-$("#rankBtn").addEventListener("click", run);
+const rankBtn = $("#rankBtn");
+const RANK_LABEL = rankBtn.innerHTML;
+function restoreRankBtn(){ rankBtn.disabled = false; rankBtn.innerHTML = RANK_LABEL; }
+
+rankBtn.addEventListener("click", run);
 async function run(){
   $("#err").textContent=""; $("#results").style.display="none";
   $("#pipe").style.display="block"; resetSteps();
-  $("#rankBtn").disabled=true; $("#status").textContent="Ranking…";
-  const t0=performance.now();
+  rankBtn.disabled = true;
+  rankBtn.innerHTML = '<span class="spin"></span> Ranking…';
+  setStatus("ranking");
+  const t0 = performance.now();
 
   // fire the backend request immediately
   const req = fetch(`${API_BASE}/api/rank`,{method:"POST",headers:{"content-type":"application/json"},
     body:JSON.stringify({jd_text:jdText, candidates})}).then(r=>r.json());
 
   // play the 4-stage animation
-  const subs=["scanning timelines & skill claims","embedding & matching to the JD","scoring with 14 features","writing grounded notes"];
+  const subs = ["scanning timelines & skill claims","embedding & matching to the JD","scoring with 14 features","writing grounded notes"];
   for(let i=0;i<4;i++){ setStage(i, subs[i]); await sleep(750); }
 
   let res;
-  try{ res = await req; }catch(e){ $("#err").textContent="Request failed: "+e; $("#rankBtn").disabled=false; return; }
-  if(res.error){ $("#err").textContent="Server error: "+res.error; $("#rankBtn").disabled=false; return; }
+  try{ res = await req; }
+  catch(e){ $("#err").textContent="Request failed: "+e; setStatus("error"); restoreRankBtn(); return; }
+  if(res.error){ $("#err").textContent="Server error: "+res.error; setStatus("error"); restoreRankBtn(); return; }
 
   // finalize stages with real numbers
   doneStage(0, res.stages.honeypots+" honeypots flagged");
@@ -234,7 +529,8 @@ async function run(){
   doneStage(3, res.stages.ranked+" reasons written");
 
   renderResults(res, ((performance.now()-t0)/1000).toFixed(1));
-  $("#rankBtn").disabled=false; $("#status").textContent="Done";
+  restoreRankBtn();
+  setStatus("done");
 }
 function renderResults(res, secs){
   $("#rTotal").textContent=res.stages.ranked; $("#rHp").textContent=res.stages.honeypots; $("#rTime").textContent=secs;
@@ -242,8 +538,9 @@ function renderResults(res, secs){
   for(const r of res.ranked){
     const demoted = parseFloat(r.score) < -500;
     const tr=document.createElement("tr"); if(demoted) tr.className="demoted";
-    tr.innerHTML = `<td class="rk">${r.rank}</td><td>${r.candidate_id}</td>
-      <td>${esc(r.title||"")}</td><td>${r.years??""}</td><td>${demoted?"⛔ demoted":r.score}</td>
+    tr.innerHTML = `<td class="rk">${r.rank}</td><td>${esc(r.candidate_id)}</td>
+      <td>${esc(r.title||"")}</td><td>${r.years??""}</td>
+      <td>${demoted?'<span class="tag">⛔ demoted</span>':esc(r.score)}</td>
       <td>${esc(r.reasoning||"")}</td>`;
     tb.appendChild(tr);
   }
@@ -252,8 +549,8 @@ function renderResults(res, secs){
     const a=document.createElement("a"); a.href=u; a.download="ranked_submission.csv"; a.click(); URL.revokeObjectURL(u); };
   $("#results").scrollIntoView({behavior:"smooth"});
 }
-const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const esc=s=>(s+"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const esc = s => (s+"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 </script>
 </body>
 </html>
