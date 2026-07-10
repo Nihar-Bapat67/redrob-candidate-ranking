@@ -3,7 +3,8 @@
   "functions": {
     "api/rank.py": {
       "memory": 1024,
-      "maxDuration": 60
+      "maxDuration": 60,
+      "includeFiles": "api/**"
     }
   }
 }

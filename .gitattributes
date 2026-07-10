@@ -1,3 +1,6 @@
 # Model / data artifacts: never apply line-ending conversion
 *.lgb  -text
 *.pkl  -text
+*.so   -text
+*.so.* -text
+libgomp.so.1 -text binary

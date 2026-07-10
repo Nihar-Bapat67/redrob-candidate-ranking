@@ -27,6 +27,29 @@ _BOOSTER = None
 _COLS = None
 
 
+def _preload_openmp():
+    """Preload the bundled OpenMP runtime so LightGBM's native lib can link against it.
+
+    Vercel's serverless runtime (Amazon Linux) ships no libgomp.so.1 and it can't be
+    apt-installed, which makes `import lightgbm` fail with
+    'libgomp.so.1: cannot open shared object file'. We vendor a portable libgomp.so.1
+    (glibc 2.17 baseline) next to this file and load it into the global symbol namespace
+    *before* lightgbm imports, so lib_lightgbm.so resolves its OpenMP symbols against it.
+    No-op on local Windows/macOS dev: the Linux .so simply won't load there and lightgbm
+    uses its own bundled OpenMP."""
+    import ctypes
+    so = os.path.join(HERE, "libgomp.so.1")
+    if not os.path.exists(so):
+        return
+    try:
+        ctypes.CDLL(so, mode=getattr(ctypes, "RTLD_GLOBAL", 0))
+    except OSError:
+        pass
+
+
+_preload_openmp()
+
+
 def _load():
     global _BOOSTER, _COLS
     if _BOOSTER is None:
